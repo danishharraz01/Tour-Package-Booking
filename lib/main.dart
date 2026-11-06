@@ -1,60 +1,36 @@
-// main.dart
-
 import 'package:flutter/material.dart';
-import 'page1.dart'; 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(MyApp());
+import 'core/theme.dart';
+import 'router.dart';
+import 'state/providers.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  runApp(
+    ProviderScope(
+      // Errors are surfaced to the user with a retry button instead of
+      // being retried silently in the background.
+      retry: (_, _) => null,
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      child: const SsbTourApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Tour Package Booking',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: MainPage(),
-    );
-  }
-}
+class SsbTourApp extends ConsumerWidget {
+  const SsbTourApp({super.key});
 
-class MainPage extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('WELCOME TO JALEY - JALEY TRIP'),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/tour.jpg'), // Replace with your tour package image asset
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Align(
-              alignment: Alignment.bottomCenter, // Adjust the alignment as needed
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 50.0), // Adjust the padding as needed
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => MyCustomForm()),
-                    );
-                  },
-                  child: Text('Get Started'),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp.router(
+      title: 'SSB Tour',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      routerConfig: ref.watch(routerProvider),
     );
   }
 }
