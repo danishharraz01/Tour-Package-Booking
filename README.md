@@ -7,10 +7,15 @@ A full-stack mobile app for browsing and booking holiday tour packages, built wi
 Travellers can browse destinations, view detailed itineraries and reviews, book a trip through a multi-step checkout with live server-side pricing and promo codes, then manage their bookings and leave reviews.
 
 <p align="center">
-  <img src="docs/screenshots/welcome.png" width="240" alt="Welcome screen" />
-  <img src="docs/screenshots/home.png" width="240" alt="Explore screen" />
-  <img src="docs/screenshots/package-detail.png" width="240" alt="Package details" />
-  <img src="docs/screenshots/sign-in.png" width="240" alt="Sign in" />
+  <img src="docs/screenshots/ssbtour-cover.png" width="100%" alt="Welcome, Explore and Package details screens" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/ssbtour-booking.png" width="100%" alt="Explore, Package details and Sign in screens" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/ssbtour-trips.png" width="100%" alt="Package details, Booking confirmed and My trips screens" />
 </p>
 
 ## Features
