@@ -34,7 +34,8 @@ export const config = {
   jwtSecret,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
   databasePath: process.env.DATABASE_PATH ?? './data/ssb.db',
-  corsOrigin: process.env.CORS_ORIGIN ?? '*',
+  /** Browser origins allowed to call the API. Unset in production = none (the mobile app doesn't need CORS). */
+  corsOrigin: process.env.CORS_ORIGIN ?? (env === 'production' ? '' : '*'),
   /**
    * Demo accounts, promo codes and sample reviews/bookings. On by default in development,
    * off in production so the publicly documented demo credentials never exist there.

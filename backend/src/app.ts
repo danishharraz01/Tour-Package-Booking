@@ -22,7 +22,13 @@ export function createApp(db: DB, { logging = true, rateLimit = true }: AppOptio
   app.use(helmet());
   app.use(
     cors({
-      origin: config.corsOrigin === '*' ? true : config.corsOrigin.split(',').map((o) => o.trim()),
+      origin:
+        config.corsOrigin === '*'
+          ? true
+          : config.corsOrigin
+              .split(',')
+              .map((o) => o.trim())
+              .filter(Boolean),
     }),
   );
   app.use(express.json({ limit: '100kb' }));

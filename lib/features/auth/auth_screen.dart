@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/api_client.dart';
+import '../../core/config.dart';
 import '../../state/providers.dart';
 import '../../widgets/brand_logo.dart';
 
@@ -79,7 +80,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   void _fillDemo() {
     setState(() {
       _mode = AuthMode.login;
-      _email.text = 'demo@ssbtour.com';
+      _email.text = 'demo@example.com';
       _password.text = 'Password123!';
     });
   }
@@ -215,7 +216,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         }),
                         child: Text(_isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'),
                       ),
-                      if (_isLogin)
+                      if (_isLogin && AppConfig.showDemoLogin)
                         TextButton.icon(
                           onPressed: _fillDemo,
                           icon: const Icon(Icons.bolt_rounded),

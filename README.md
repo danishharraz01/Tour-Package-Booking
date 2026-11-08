@@ -87,8 +87,8 @@ On first start in development the database is created and seeded with 9 tour pac
 
 | Role | Email | Password |
 | --- | --- | --- |
-| Customer | `demo@ssbtour.com` | `Password123!` |
-| Admin | `admin@ssbtour.com` | `Admin123!` |
+| Customer | `demo@example.com` | `Password123!` |
+| Admin | `admin@example.com` | `Admin123!` |
 
 Reset the database at any time with `npm run seed -- --reset` (disabled in production).
 
@@ -150,22 +150,29 @@ total      = base + tour style + insurance − discount
 | `GROUP10` | 10% | 4+ travellers |
 | `EARLYBIRD20` | 20% | Departure 60+ days away |
 
+These are demo codes, seeded only in development. Production starts with no promo codes, so create your own instead of reusing these public ones.
+
 ## Deployment
 
 The API ships with a multi-stage `backend/Dockerfile`. Set `JWT_SECRET` and mount a volume at `/data` to persist the SQLite database:
 
 ```bash
 docker build -t ssb-tour-api backend
-docker run -d --name ssb-api -p 4000:4000 -e JWT_SECRET=$(openssl rand -hex 32) -v ssb-data:/data ssb-tour-api
+docker run -d --name ssb-api -p 127.0.0.1:4000:4000 -e JWT_SECRET=$(openssl rand -hex 32) -v ssb-data:/data ssb-tour-api
 ```
 
-Production starts with no user accounts and no demo data. Create your admin account with credentials that never go into the repo:
+The port is bound to `127.0.0.1` so the API is never served over plain HTTP. Put it behind a reverse proxy that terminates HTTPS (e.g. Caddy or Nginx), and set `CORS_ORIGIN` only if a web version of the app calls the API from a browser.
+
+Production starts with no user accounts and no demo data. Create your admin account without typing the password into a command, so it stays out of your shell history:
 
 ```bash
-docker exec -it -e ADMIN_EMAIL=you@example.com -e ADMIN_PASSWORD='a-long-unique-password' ssb-api node dist/db/create-admin.js
+read -rp 'Admin email: ' ADMIN_EMAIL; read -rsp 'Admin password: ' ADMIN_PASSWORD; echo
+export ADMIN_EMAIL ADMIN_PASSWORD
+docker exec -e ADMIN_EMAIL -e ADMIN_PASSWORD ssb-api node dist/db/create-admin.js
+unset ADMIN_PASSWORD
 ```
 
-Locally, the same thing is `ADMIN_EMAIL=... ADMIN_PASSWORD=... npm run create-admin`.
+Locally, run `npm run create-admin` in `backend/` with the same two variables set.
 
 ## License
 

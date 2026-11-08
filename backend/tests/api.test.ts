@@ -33,7 +33,7 @@ before(async () => {
   assert.equal(res.status, 201);
   token = res.body.token;
 
-  const admin = await request(app).post('/api/auth/login').send({ email: 'admin@ssbtour.com', password: 'Admin123!' });
+  const admin = await request(app).post('/api/auth/login').send({ email: 'admin@example.com', password: 'Admin123!' });
   adminToken = admin.body.token;
 });
 

@@ -316,8 +316,8 @@ export const SEED_PROMO_CODES = [
 ];
 
 export const DEMO_USERS = [
-  { name: 'Demo Traveller', email: 'demo@ssbtour.com', password: 'Password123!', role: 'customer' },
-  { name: 'SSB Admin', email: 'admin@ssbtour.com', password: 'Admin123!', role: 'admin' },
+  { name: 'Demo Traveller', email: 'demo@example.com', password: 'Password123!', role: 'customer' },
+  { name: 'SSB Admin', email: 'admin@example.com', password: 'Admin123!', role: 'admin' },
 ] as const;
 
 const SEED_REVIEWS: [slug: string, author: string, rating: number, comment: string][] = [
