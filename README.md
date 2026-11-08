@@ -35,8 +35,8 @@ Travellers can browse destinations, view detailed itineraries and reviews, book 
 - Request validation with Zod and consistent JSON error responses
 - **Server-authoritative pricing**: amounts are integers in sen, and prices sent by the client are ignored
 - Business rules: minimum booking notice, group-size limits, promo code conditions, 3-month (90-day) cancellation window, one review per booking
-- Security middleware: Helmet, CORS allow-list, rate-limited auth endpoints
-- 21 integration and unit tests (`node:test` + Supertest)
+- Security middleware: Helmet, CORS allow-list, per-IP rate limits (sign-in, quotes, bookings, promo code guessing)
+- 25 integration and unit tests (`node:test` + Supertest)
 
 ## Architecture
 
@@ -158,10 +158,10 @@ The API ships with a multi-stage `backend/Dockerfile`. Set `JWT_SECRET` and moun
 
 ```bash
 docker build -t ssb-tour-api backend
-docker run -d --name ssb-api -p 127.0.0.1:4000:4000 -e JWT_SECRET=$(openssl rand -hex 32) -v ssb-data:/data ssb-tour-api
+docker run -d --name ssb-api -p 127.0.0.1:4000:4000 -e JWT_SECRET=$(openssl rand -hex 32) -e TRUST_PROXY=1 -v ssb-data:/data ssb-tour-api
 ```
 
-The port is bound to `127.0.0.1` so the API is never served over plain HTTP. Put it behind a reverse proxy that terminates HTTPS (e.g. Caddy or Nginx), and set `CORS_ORIGIN` only if a web version of the app calls the API from a browser.
+The port is bound to `127.0.0.1` so the API is never served over plain HTTP. Put it behind a reverse proxy that terminates HTTPS (e.g. Caddy or Nginx). `TRUST_PROXY=1` tells the API there is one proxy in front, so rate limits apply to each user's real IP instead of the proxy's. Set `CORS_ORIGIN` only if a web version of the app calls the API from a browser.
 
 Production starts with no user accounts and no demo data. Create your admin account without typing the password into a command, so it stays out of your shell history:
 

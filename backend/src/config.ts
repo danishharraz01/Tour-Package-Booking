@@ -28,6 +28,20 @@ if (env === 'production' && (placeholderSecrets.includes(jwtSecret) || jwtSecret
   );
 }
 
+/**
+ * How many reverse proxies sit in front of the API (e.g. `1` for Caddy or Nginx), or a comma-separated
+ * list of trusted proxy IPs/subnets. Unset = trust none, which is right when the API faces the internet directly.
+ * `true` is rejected: it trusts any X-Forwarded-For header, so clients could fake their IP and dodge rate limits.
+ */
+function parseTrustProxy(raw: string | undefined): number | string | false {
+  const value = raw?.trim();
+  if (!value || value === 'false' || value === '0') return false;
+  if (value === 'true') {
+    throw new Error('TRUST_PROXY=true lets clients spoof their IP. Set the number of proxies instead, e.g. TRUST_PROXY=1');
+  }
+  return /^\d+$/.test(value) ? Number(value) : value;
+}
+
 export const config = {
   env,
   port: Number(process.env.PORT ?? 4000),
@@ -35,6 +49,7 @@ export const config = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
   databasePath: process.env.DATABASE_PATH ?? './data/ssb.db',
   /** Browser origins allowed to call the API. Unset in production = none (the mobile app doesn't need CORS). */
+  trustProxy: parseTrustProxy(process.env.TRUST_PROXY),
   corsOrigin: process.env.CORS_ORIGIN ?? (env === 'production' ? '' : '*'),
   /**
    * Demo accounts, promo codes and sample reviews/bookings. On by default in development,

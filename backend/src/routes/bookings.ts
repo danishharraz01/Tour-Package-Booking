@@ -7,6 +7,7 @@ import { toBooking } from '../lib/mappers.js';
 import { daysUntil } from '../lib/pricing.js';
 import { buildQuote, quoteRequestSchema } from '../lib/quote-service.js';
 import { requireAuth } from '../middleware/auth.js';
+import type { RateLimiters } from '../middleware/rate-limit.js';
 
 // Bookings can be cancelled until 3 months (90 days) before departure.
 export const CANCELLATION_CUTOFF_DAYS = 90;
@@ -42,18 +43,18 @@ function generateReference(): string {
   return ref;
 }
 
-export function quotesRouter(db: DB) {
+export function quotesRouter(db: DB, limits: RateLimiters) {
   const router = Router();
-  router.post('/', (req, res) => {
+  router.post('/', limits.quotes, limits.promoAttempts, (req, res) => {
     const { quote, promo } = buildQuote(db, quoteRequestSchema.parse(req.body));
     res.json({ data: { ...quote, promo: promo && { code: promo.code, description: promo.description, percentOff: promo.percentOff } } });
   });
   return router;
 }
 
-export function bookingsRouter(db: DB) {
+export function bookingsRouter(db: DB, limits: RateLimiters) {
   const router = Router();
-  router.use(requireAuth);
+  router.use(requireAuth, limits.bookingWrites);
 
   const findOwned = (reference: string, user: Express.Request['user']) => {
     const row = db.prepare(`${BOOKING_SELECT} WHERE b.reference = ?`).get(reference);
@@ -62,7 +63,7 @@ export function bookingsRouter(db: DB) {
     return row;
   };
 
-  router.post('/', (req, res) => {
+  router.post('/', limits.promoAttempts, (req, res) => {
     const body = createBookingSchema.parse(req.body);
     const booking = transaction(db, () => {
       const { pkg, quote } = buildQuote(db, body);

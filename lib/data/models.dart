@@ -307,6 +307,7 @@ class Booking {
   String get imageAsset => 'assets/$packageImage';
   DateTime get returnDate => tourDate.add(Duration(days: packageDurationDays - 1));
   bool get isUpcoming => status == BookingStatus.confirmed && !tourDate.isBefore(todayDate());
+
   /// Reviews open once the trip has started (departure day or later).
   bool get canReview => status != BookingStatus.cancelled && !hasReview && !tourDate.isAfter(todayDate());
 

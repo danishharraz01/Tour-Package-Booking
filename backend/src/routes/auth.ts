@@ -1,11 +1,11 @@
 import bcrypt from 'bcryptjs';
 import { Router } from 'express';
-import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import type { DB } from '../db/index.js';
 import { HttpError } from '../lib/errors.js';
 import { toUser } from '../lib/mappers.js';
 import { requireAuth, signToken } from '../middleware/auth.js';
+import type { RateLimiters } from '../middleware/rate-limit.js';
 
 const phoneSchema = z
   .string()
@@ -33,17 +33,10 @@ const updateProfileSchema = z.object({
   phone: phoneSchema.nullable().optional(),
 });
 
-export function authRouter(db: DB, { rateLimitEnabled = true } = {}) {
+export function authRouter(db: DB, limits: RateLimiters) {
   const router = Router();
 
-  const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 20,
-    standardHeaders: 'draft-8',
-    legacyHeaders: false,
-    skip: () => !rateLimitEnabled,
-    message: { error: { code: 'rate_limited', message: 'Too many attempts. Please try again later.' } },
-  });
+  const limiter = limits.auth;
 
   router.post('/register', limiter, async (req, res) => {
     const body = registerSchema.parse(req.body);
