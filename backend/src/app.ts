@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import { config } from './config.js';
 import type { DB } from './db/index.js';
 import { errorHandler, notFoundHandler } from './middleware/error.js';
+import { createRateLimiters } from './middleware/rate-limit.js';
 import { adminRouter } from './routes/admin.js';
 import { authRouter } from './routes/auth.js';
 import { bookingsRouter, quotesRouter } from './routes/bookings.js';
@@ -19,6 +20,9 @@ export function createApp(db: DB, { logging = true, rateLimit = true }: AppOptio
   const app = express();
 
   app.disable('x-powered-by');
+  // Behind a reverse proxy, read the client IP from X-Forwarded-For (see TRUST_PROXY in config).
+  app.set('trust proxy', config.trustProxy);
+  const limits = createRateLimiters(rateLimit);
   app.use(helmet());
   app.use(
     cors({
@@ -31,6 +35,7 @@ export function createApp(db: DB, { logging = true, rateLimit = true }: AppOptio
               .filter(Boolean),
     }),
   );
+  app.use('/api', limits.global);
   app.use(express.json({ limit: '100kb' }));
   if (logging) app.use(morgan(config.env === 'production' ? 'combined' : 'dev'));
 
@@ -39,10 +44,10 @@ export function createApp(db: DB, { logging = true, rateLimit = true }: AppOptio
     res.json({ status: 'ok', uptime: Math.round(process.uptime()) });
   });
 
-  app.use('/api/auth', authRouter(db, { rateLimitEnabled: rateLimit }));
+  app.use('/api/auth', authRouter(db, limits));
   app.use('/api/packages', packagesRouter(db));
-  app.use('/api/quotes', quotesRouter(db));
-  app.use('/api/bookings', bookingsRouter(db));
+  app.use('/api/quotes', quotesRouter(db, limits));
+  app.use('/api/bookings', bookingsRouter(db, limits));
   app.use('/api/admin', adminRouter(db));
 
   app.use(notFoundHandler);
