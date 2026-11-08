@@ -716,10 +716,7 @@ class _CancellationPolicyCard extends StatelessWidget {
         children: [
           const Text('•  '),
           Expanded(
-            child: Text(
-              text,
-              style: theme.textTheme.bodySmall?.copyWith(fontWeight: strong ? FontWeight.w700 : null),
-            ),
+            child: Text(text, style: theme.textTheme.bodySmall?.copyWith(fontWeight: strong ? FontWeight.w700 : null)),
           ),
         ],
       ),
