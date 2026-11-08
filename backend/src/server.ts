@@ -2,7 +2,7 @@ import { createApp } from './app.js';
 import { config } from './config.js';
 import { openDatabase } from './db/index.js';
 
-const db = openDatabase(config.databasePath);
+const db = openDatabase(config.databasePath, { demoData: config.seedDemoData });
 const app = createApp(db);
 
 const server = app.listen(config.port, () => {

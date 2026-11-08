@@ -83,14 +83,16 @@ cp .env.example .env     # optional — sensible defaults are built in
 npm run dev              # http://localhost:4000
 ```
 
-On first start the database is created and seeded with 9 tour packages, promo codes, sample reviews and two demo accounts:
+On first start in development the database is created and seeded with 9 tour packages, promo codes, sample reviews and two demo accounts:
 
 | Role | Email | Password |
 | --- | --- | --- |
 | Customer | `demo@ssbtour.com` | `Password123!` |
 | Admin | `admin@ssbtour.com` | `Admin123!` |
 
-Reset the database at any time with `npm run seed -- --reset`.
+Reset the database at any time with `npm run seed -- --reset` (disabled in production).
+
+> These demo accounts only exist when `SEED_DEMO_DATA` is on, which is the default outside production. With `NODE_ENV=production` only the tour catalogue is seeded.
 
 ### 2. Run the app
 
@@ -154,8 +156,16 @@ The API ships with a multi-stage `backend/Dockerfile`. Set `JWT_SECRET` and moun
 
 ```bash
 docker build -t ssb-tour-api backend
-docker run -p 4000:4000 -e JWT_SECRET=$(openssl rand -hex 32) -v ssb-data:/data ssb-tour-api
+docker run -d --name ssb-api -p 4000:4000 -e JWT_SECRET=$(openssl rand -hex 32) -v ssb-data:/data ssb-tour-api
 ```
+
+Production starts with no user accounts and no demo data. Create your admin account with credentials that never go into the repo:
+
+```bash
+docker exec -it -e ADMIN_EMAIL=you@example.com -e ADMIN_PASSWORD='a-long-unique-password' ssb-api node dist/db/create-admin.js
+```
+
+Locally, the same thing is `ADMIN_EMAIL=... ADMIN_PASSWORD=... npm run create-admin`.
 
 ## License
 

@@ -19,8 +19,13 @@ loadDotEnv();
 const env = process.env.NODE_ENV ?? 'development';
 const jwtSecret = process.env.JWT_SECRET ?? 'dev-only-secret-change-me';
 
-if (env === 'production' && jwtSecret === 'dev-only-secret-change-me') {
-  throw new Error('JWT_SECRET must be set in production');
+// Refuse to start in production with a missing, placeholder or short secret: anyone who knows
+// the secret can forge tokens for any account, including admins.
+const placeholderSecrets = ['dev-only-secret-change-me', 'change-me', 'changeme', 'secret'];
+if (env === 'production' && (placeholderSecrets.includes(jwtSecret) || jwtSecret.length < 32)) {
+  throw new Error(
+    'JWT_SECRET must be set to a random value of at least 32 characters in production (e.g. `openssl rand -hex 32`)',
+  );
 }
 
 export const config = {
@@ -30,4 +35,9 @@ export const config = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
   databasePath: process.env.DATABASE_PATH ?? './data/ssb.db',
   corsOrigin: process.env.CORS_ORIGIN ?? '*',
+  /**
+   * Demo accounts, promo codes and sample reviews/bookings. On by default in development,
+   * off in production so the publicly documented demo credentials never exist there.
+   */
+  seedDemoData: (process.env.SEED_DEMO_DATA ?? (env === 'production' ? 'false' : 'true')) === 'true',
 } as const;

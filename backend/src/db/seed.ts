@@ -365,7 +365,11 @@ function seedReviews(db: DatabaseSync) {
  * reviews. On an existing database it only adds catalogue packages that are
  * missing (matched by slug), so new trips appear without wiping user data.
  */
-export function seed(db: DatabaseSync) {
+/**
+ * Seeds the tour catalogue. With `demoData`, also adds promo codes, the demo accounts and
+ * sample reviews — never enable that in production, the demo passwords are public.
+ */
+export function seed(db: DatabaseSync, { demoData = true }: { demoData?: boolean } = {}) {
   const { count } = db.prepare('SELECT COUNT(*) AS count FROM packages').get() as { count: number };
 
   const insertPackage = db.prepare(`
@@ -384,7 +388,7 @@ export function seed(db: DatabaseSync) {
     }
   };
 
-  if (count > 0) {
+  if (count > 0 || !demoData) {
     addPackages();
     return;
   }
